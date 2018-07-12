@@ -24,26 +24,46 @@ readdirAsync(program.path)
     income: rows.filter(row => row.price > 0),
     expense: rows.filter(row => row.price < 0)
   }))
-  .then(({income, expense}) => ({
-    incomeTotal: income.reduce(accPrice, {price: 0, tax: 0}),
-    expenseTotal: expense.reduce(accPrice, {price: 0, tax: 0}),
-    income,
-    expense
-  }))
+  .then(({income, expense}) => {
+    const incomeTotal = income.reduce(accPrice, {total: 0, tax: 0})
+    const expenseTotal = expense.reduce(accPrice, {total: 0, tax: 0})
+    return {
+      income: {
+        totalNoVat: toEuros(incomeTotal.total),
+        vat: toEuros(incomeTotal.tax),
+        total: toEuros(incomeTotal.total + incomeTotal.tax),
+        rows: income
+      },
+      expenses: {
+        totalNoVat: toEuros(expenseTotal.total),
+        vat: toEuros(expenseTotal.tax),
+        total: toEuros(expenseTotal.total + expenseTotal.tax),
+        rows: expense
+      }
+    }
+  })
   .then(results => console.log(results))
 
 function splitFilename(fileName) {
   const [datePart, namePart, pricePart, taxPart] = fileName.split('|')
   const date = new Date(datePart)
   const name = namePart.trim()
-  const price = Number(pricePart.trim().replace('€', ''))
-  const tax = Number(taxPart.trim().replace('ALV', '').replace('€.pdf', '').trim())
+  const price = toCents(Number(pricePart.trim().replace('€', '')))
+  const tax = toCents(Number(taxPart.trim().replace('ALV', '').replace('€.pdf', '').trim()))
   return {date, name, price, tax}
 }
 
 function accPrice(acc, item) {
   return {
-    price: acc.price + item.price,
+    total: acc.total + item.price,
     tax: acc.tax + item.tax,
   }
+}
+
+function toCents(euros) {
+  return euros * 100
+}
+
+function toEuros(cents) {
+  return cents / 100
 }
