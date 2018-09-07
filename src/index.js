@@ -37,9 +37,12 @@ readdirAsync(program.path)
       expenses: {
         totalNoVat: toEuros(expenseTotal.total),
         vat: toEuros(expenseTotal.tax),
-        total: toEuros(expenseTotal.total + expenseTotal.tax),
+        total: toEuros(expenseTotal.total - expenseTotal.tax),
         rows: expense
-      }
+      },
+      totalNoVat: toEuros(incomeTotal.total + expenseTotal.total),
+      vat: toEuros(incomeTotal.tax - expenseTotal.tax),
+      total: toEuros(incomeTotal.total + incomeTotal.tax + expenseTotal.total - expenseTotal.tax)
     }
   })
   .then(results => console.log(results))
@@ -50,6 +53,9 @@ function splitFilename(fileName) {
   const name = namePart.trim()
   const price = toCents(Number(pricePart.trim().replace('€', '')))
   const tax = toCents(Number(taxPart.trim().replace('ALV', '').replace('€.pdf', '').trim()))
+  if (isNaN(price) || isNaN(tax)) {
+    console.error(`Failed to parse price or tax from ${fileName}`)
+  }
   return {date, name, price, tax}
 }
 
