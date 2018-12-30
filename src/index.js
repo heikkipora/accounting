@@ -46,6 +46,7 @@ function calculateTotals({income, expense, rows}) {
       totalNoVat: toEuros(-expenseTotal.total),
       vat: toEuros(expenseTotal.tax),
       total: toEuros(-expenseTotal.total + expenseTotal.tax),
+      totalNoVatEU: toEuros(-expenseTotalEU.total),
       vatEU: toEuros(expenseTotalEU.tax)
     },
     rows,
@@ -61,7 +62,7 @@ function splitFilename(fileName) {
   const name = namePart.trim()
   const price = toCents(Number(pricePart.trim().replace('€', '')))
   const tax = toCents(Number(taxPart.trim().replace('ALV', '').replace('€.pdf', '').trim()))
-  const isEU = namePart.indexOf('(EU)') >= 0
+  const isEU = namePart.indexOf('(EU)') >= 0 && tax > 0
   if (isNaN(price) || isNaN(tax)) {
     console.error(`Failed to parse price or tax from ${fileName}`)
   }
@@ -102,11 +103,11 @@ function toHtml(data) {
 
   <h2>Yhteenveto ALV-ilmoitukseen</h2>
   <p>Vero kotimaan myynnistä (24%): ${data.income.vat}</p>
-  <p>Vero palveluostoista muista EU-maista: ${data.expenses.vatEU}</p>
+  <p>Vero palveluostoista muista EU-maista: ${data.expenses.vatEU}</br>
+     Palveluostot muista EU-maista: ${data.expenses.totalNoVatEU}</p>
   <p>Verokauden vähennettävä vero: ${data.expenses.vat}</br>
      Alarajahuojennukseen oikeuttava liikevaihto: ${data.income.totalNoVat}</br>
      Alarajahuojennukseen oikeuttava vero: ${data.vat}</br>
-     Alarajahuojennuksen määrä: ${data.vat}</p>
 
   <h2>Yhteenveto veroilmoitukseen</h2>
   <p>Liikevaihto / tuotot ammatista yhteensä: ${data.income.totalNoVat}</p>
