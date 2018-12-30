@@ -40,18 +40,18 @@ function calculateTotals({income, expense, rows}) {
     income: {
       totalNoVat: toEuros(incomeTotal.total),
       vat: toEuros(incomeTotal.tax),
-      total: toEuros(incomeTotal.total + incomeTotal.tax)
+      total: toEuros(incomeTotal.total + incomeTotal.tax - expenseTotal.tax)
     },
     expenses: {
       totalNoVat: toEuros(-expenseTotal.total),
       vat: toEuros(expenseTotal.tax),
-      total: toEuros(-(expenseTotal.total - expenseTotal.tax)),
+      total: toEuros(-expenseTotal.total + expenseTotal.tax),
       vatEU: toEuros(expenseTotalEU.tax)
     },
     rows,
     totalNoVat: toEuros(incomeTotal.total + expenseTotal.total),
     vat: toEuros(incomeTotal.tax - expenseTotal.tax),
-    total: toEuros(incomeTotal.total + incomeTotal.tax + expenseTotal.total - expenseTotal.tax)
+    total: toEuros(incomeTotal.total + incomeTotal.tax - expenseTotal.tax + expenseTotal.total)
   }
 }
 
@@ -104,15 +104,15 @@ function toHtml(data) {
   <p>Vero kotimaan myynnistä (24%): ${data.income.vat}</p>
   <p>Vero palveluostoista muista EU-maista: ${data.expenses.vatEU}</p>
   <p>Verokauden vähennettävä vero: ${data.expenses.vat}</br>
-     Alarajahuojennukseen oikeuttava liikevaihto: ${data.totalNoVat}</br>
+     Alarajahuojennukseen oikeuttava liikevaihto: ${data.income.totalNoVat}</br>
      Alarajahuojennukseen oikeuttava vero: ${data.vat}</br>
      Alarajahuojennuksen määrä: ${data.vat}</p>
 
   <h2>Yhteenveto veroilmoitukseen</h2>
   <p>Liikevaihto / tuotot ammatista yhteensä: ${data.income.totalNoVat}</p>
-  <p>Saadut avustukset ja tuet: ${data.income.vat}</p>
+  <p>Saadut avustukset ja tuet: ${data.vat}</p>
   <p>Elinkeinotoiminnan veronalaiset tuotot yhteensä: ${data.income.total}</p>
-  <p>Muut vähennyskelpoiset kulut: ${data.expenses.total}</p>
+  <p>Muut vähennyskelpoiset kulut: ${data.expenses.totalNoVat}</p>
   <p>Elinkeinotoiminnan tulos: ${data.total}</p>
   ${TAIL}`
 }
