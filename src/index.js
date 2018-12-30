@@ -35,6 +35,7 @@ function splitIncomeAndExpense(rows) {
 function calculateTotals({income, expense, rows}) {
   const incomeTotal = income.reduce(accPrice, {total: 0, tax: 0})
   const expenseTotal = expense.reduce(accPrice, {total: 0, tax: 0})
+  const expenseTotalEU = expense.filter(({isEU}) => isEU).reduce(accPrice, {total: 0, tax: 0})
   return {
     income: {
       totalNoVat: toEuros(incomeTotal.total),
@@ -42,9 +43,10 @@ function calculateTotals({income, expense, rows}) {
       total: toEuros(incomeTotal.total + incomeTotal.tax)
     },
     expenses: {
-      totalNoVat: toEuros(expenseTotal.total),
+      totalNoVat: toEuros(-expenseTotal.total),
       vat: toEuros(expenseTotal.tax),
-      total: toEuros(expenseTotal.total - expenseTotal.tax)
+      total: toEuros(-(expenseTotal.total - expenseTotal.tax)),
+      vatEU: toEuros(expenseTotalEU.tax)
     },
     rows,
     totalNoVat: toEuros(incomeTotal.total + expenseTotal.total),
@@ -59,10 +61,11 @@ function splitFilename(fileName) {
   const name = namePart.trim()
   const price = toCents(Number(pricePart.trim().replace('€', '')))
   const tax = toCents(Number(taxPart.trim().replace('ALV', '').replace('€.pdf', '').trim()))
+  const isEU = namePart.indexOf('(EU)') >= 0
   if (isNaN(price) || isNaN(tax)) {
     console.error(`Failed to parse price or tax from ${fileName}`)
   }
-  return {date, fileName, name, price, tax}
+  return {date, fileName, name, price, tax, isEU}
 }
 
 function accPrice(acc, item) {
@@ -77,7 +80,7 @@ function toCents(euros) {
 }
 
 function toEuros(cents) {
-  return (cents / 100).toFixed(2) + ' €'
+  return (cents / 100).toFixed(2).replace('.', ',') + ' €'
 }
 
 function writeOutput(html) {
@@ -91,10 +94,26 @@ function formatDate(date) {
 
 function toHtml(data) {
   return `${HEAD}
+  <h2>Tulot ja menot</h2>
   <table>
-  <tr><th>Pvm</th><th>Selite</th><th>Tulo</th><th>Meno</th><th>ALV</th></tr>
-  ${rowsHtml(data)}
+    <tr><th>Pvm</th><th>Selite</th><th>Tulo</th><th>Meno</th><th>ALV</th></tr>
+    ${rowsHtml(data)}
   </table>
+
+  <h2>Yhteenveto ALV-ilmoitukseen</h2>
+  <p>Vero kotimaan myynnistä (24%): ${data.income.vat}</p>
+  <p>Vero palveluostoista muista EU-maista: ${data.expenses.vatEU}</p>
+  <p>Verokauden vähennettävä vero: ${data.expenses.vat}</br>
+     Alarajahuojennukseen oikeuttava liikevaihto: ${data.totalNoVat}</br>
+     Alarajahuojennukseen oikeuttava vero: ${data.vat}</br>
+     Alarajahuojennuksen määrä: ${data.vat}</p>
+
+  <h2>Yhteenveto veroilmoitukseen</h2>
+  <p>Liikevaihto / tuotot ammatista yhteensä: ${data.income.totalNoVat}</p>
+  <p>Saadut avustukset ja tuet: ${data.income.vat}</p>
+  <p>Elinkeinotoiminnan veronalaiset tuotot yhteensä: ${data.income.total}</p>
+  <p>Muut vähennyskelpoiset kulut: ${data.expenses.total}</p>
+  <p>Elinkeinotoiminnan tulos: ${data.total}</p>
   ${TAIL}`
 }
 
