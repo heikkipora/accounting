@@ -27,26 +27,26 @@ readdirAsync(program.path)
 function splitIncomeAndExpense(rows) {
   return {
     income: rows.filter(row => row.price > 0),
-    expense: rows.filter(row => row.price < 0)  
+    expense: rows.filter(row => row.price < 0),
+    rows
   }
 }
 
-function calculateTotals({income, expense}) {
+function calculateTotals({income, expense, rows}) {
   const incomeTotal = income.reduce(accPrice, {total: 0, tax: 0})
   const expenseTotal = expense.reduce(accPrice, {total: 0, tax: 0})
   return {
     income: {
       totalNoVat: toEuros(incomeTotal.total),
       vat: toEuros(incomeTotal.tax),
-      total: toEuros(incomeTotal.total + incomeTotal.tax),
-      rows: income
+      total: toEuros(incomeTotal.total + incomeTotal.tax)
     },
     expenses: {
       totalNoVat: toEuros(expenseTotal.total),
       vat: toEuros(expenseTotal.tax),
-      total: toEuros(expenseTotal.total - expenseTotal.tax),
-      rows: expense
+      total: toEuros(expenseTotal.total - expenseTotal.tax)
     },
+    rows,
     totalNoVat: toEuros(incomeTotal.total + expenseTotal.total),
     vat: toEuros(incomeTotal.tax - expenseTotal.tax),
     total: toEuros(incomeTotal.total + incomeTotal.tax + expenseTotal.total - expenseTotal.tax)
@@ -77,7 +77,7 @@ function toCents(euros) {
 }
 
 function toEuros(cents) {
-  return (cents / 100).toFixed(2)
+  return (cents / 100).toFixed(2) + ' €'
 }
 
 function writeOutput(html) {
@@ -92,15 +92,14 @@ function formatDate(date) {
 function toHtml(data) {
   return `${HEAD}
   <table>
-  <tr><th>Pvm</th><th>Aihe</th><th>Veroton</th><th>ALV</th></tr>
-  ${rowsHtml(data.income)}
-  ${rowsHtml(data.expenses)}
+  <tr><th>Pvm</th><th>Selite</th><th>Tulo</th><th>Meno</th><th>ALV</th></tr>
+  ${rowsHtml(data)}
   </table>
   ${TAIL}`
 }
 
 function rowsHtml({rows}) {
-  return rows.map(row => `<tr><td>${formatDate(row.date)}</td><td><a href="${encodeURIComponent(row.fileName)}" target="_blank">${row.name}</a></td><td>${toEuros(row.price)} €</td><td>${toEuros(row.tax)} €</td></tr>`).join('\n')
+  return rows.map(row => `<tr><td>${formatDate(row.date)}</td><td><a href="${encodeURIComponent(row.fileName)}" target="_blank">${row.name}</a></td><td>${row.price > 0 ? toEuros(row.price) : ''}</td><td>${row.price < 0 ? toEuros(-row.price) : ''}</td><td>${row.tax > 0 ? toEuros(row.tax) : ''}</td></tr>`).join('\n')
 }
 
 const HEAD = 
@@ -117,6 +116,9 @@ const HEAD =
  table {
   border-collapse: collapse;
  }
+ td, th {
+   border: 1px solid rgb(220,220,220);
+ }
  th {
    text-align: left;
    background-color: rgb(242,242,242);
@@ -127,8 +129,8 @@ const HEAD =
   margin: 0;
   padding: 2px 8px;
  }
- th:nth-child(1), th:nth-child(3), th:nth-child(4),
- td:nth-child(1), td:nth-child(3), td:nth-child(4) { 
+ th:nth-child(1), th:nth-child(3), th:nth-child(4), th:nth-child(5),
+ td:nth-child(1), td:nth-child(3), td:nth-child(4), td:nth-child(5) {
    text-align: right;
  }
  </style>
