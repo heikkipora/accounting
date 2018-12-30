@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "start": "node src/index.js --path /Users/hepora/Dropbox/Arkisto/Drillsoft/2018 --output ./file.json"
+    "start": "node src/index.js --path /Users/hepora/Dropbox/Arkisto/Drillsoft/2018"
   },
   "author": "",
   "license": "MIT",

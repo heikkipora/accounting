@@ -1,26 +1,28 @@
 const fs = require('fs')
+const path = require('path')
 const program = require('commander')
 const Promise = require('bluebird')
 
 program
   .version(require(`${__dirname}/../package.json`).version)
   .option('--path <path>', 'Path to scan for PDFs')
-  .option('--output <path>', 'Path to save a file to')
   .parse(process.argv)
 
-if (!program.path || !program.output) {
+if (!program.path) {
   console.error(program.help())
   process.exit(1)
 }
 
 const readdirAsync = Promise.promisify(fs.readdir)
+const writeFileAsync = Promise.promisify(fs.writeFile)
 
 const fileNameRegex = /^[\d]{4}-[\d]{2}-[\d]{2}.*\.pdf$/
 readdirAsync(program.path)
   .then(fileNames => fileNames.filter(fileName => fileNameRegex.test(fileName)).map(splitFilename))
   .then(splitIncomeAndExpense)
   .then(calculateTotals)
-  .then(console.log)
+  .then(toHtml)
+  .then(writeOutput)
 
 function splitIncomeAndExpense(rows) {
   return {
@@ -60,7 +62,7 @@ function splitFilename(fileName) {
   if (isNaN(price) || isNaN(tax)) {
     console.error(`Failed to parse price or tax from ${fileName}`)
   }
-  return {date, name, price, tax}
+  return {date, fileName, name, price, tax}
 }
 
 function accPrice(acc, item) {
@@ -75,5 +77,64 @@ function toCents(euros) {
 }
 
 function toEuros(cents) {
-  return cents / 100
+  return (cents / 100).toFixed(2)
 }
+
+function writeOutput(html) {
+  const outputFile = path.resolve(program.path, 'index.html')
+  return writeFileAsync(outputFile, html, 'utf8')
+}
+
+function formatDate(date) {
+  return date.getDate() + "." + (date.getMonth() + 1) + "." + date.getFullYear()
+}
+
+function toHtml(data) {
+  return `${HEAD}
+  <table>
+  <tr><th>Pvm</th><th>Aihe</th><th>Veroton</th><th>ALV</th></tr>
+  ${rowsHtml(data.income)}
+  ${rowsHtml(data.expenses)}
+  </table>
+  ${TAIL}`
+}
+
+function rowsHtml({rows}) {
+  return rows.map(row => `<tr><td>${formatDate(row.date)}</td><td><a href="${encodeURIComponent(row.fileName)}" target="_blank">${row.name}</a></td><td>${toEuros(row.price)} €</td><td>${toEuros(row.tax)} €</td></tr>`).join('\n')
+}
+
+const HEAD = 
+`<!doctype html>
+<html lang="fi">
+<head>
+ <title>Kirjanpito 2018</title>
+ <meta charset="utf-8">
+ <meta http-equiv="x-ua-compatible" content="IE=edge">
+ <style>
+ * {
+   font-family: sans-serif;
+ }
+ table {
+  border-collapse: collapse;
+ }
+ th {
+   text-align: left;
+   background-color: rgb(242,242,242);
+   margin: 0;
+   padding: 4px 8px;
+ }
+ td {
+  margin: 0;
+  padding: 2px 8px;
+ }
+ th:nth-child(1), th:nth-child(3), th:nth-child(4),
+ td:nth-child(1), td:nth-child(3), td:nth-child(4) { 
+   text-align: right;
+ }
+ </style>
+</head>
+<body>
+`
+const TAIL = 
+`</body>
+</html>`
