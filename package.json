@@ -3,12 +3,12 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "start": "node src/index.js --path /Users/hepora/Dropbox/Arkisto/Drillsoft/2018"
+    "start": "node src/index.js --path /Users/hepora/Dropbox/Arkisto/Drillsoft/2019"
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "bluebird": "3.5.3",
-    "commander": "2.19.0"
+    "bluebird": "3.5.5",
+    "commander": "2.20.0"
   }
 }
