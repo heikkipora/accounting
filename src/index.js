@@ -95,7 +95,7 @@ function formatDate(date) {
 
 function toHtml(data) {
   return `${HEAD}
-  <h2>Kirjanpito 2018</h2>
+  <h2>Kirjanpito 2019</h2>
   <table>
     <tr><th>Pvm</th><th>Selite</th><th>Tulo</th><th>Meno</th><th>ALV</th></tr>
     ${rowsHtml(data)}
@@ -126,7 +126,7 @@ const HEAD =
 `<!doctype html>
 <html lang="fi">
 <head>
- <title>Kirjanpito 2018</title>
+ <title>Kirjanpito 2019</title>
  <meta charset="utf-8">
  <meta http-equiv="x-ua-compatible" content="IE=edge">
  <style>
