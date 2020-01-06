@@ -1,5 +1,6 @@
 {
   "name": "accounting",
+  "private": true,
   "version": "1.0.0",
   "description": "",
   "scripts": {
@@ -8,7 +9,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "bluebird": "3.5.5",
-    "commander": "2.20.0"
+    "bluebird": "3.7.2",
+    "commander": "4.1.0"
   }
 }
