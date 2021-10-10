@@ -95,7 +95,7 @@ function formatDate(date) {
 
 function toHtml(data) {
   return `${HEAD}
-  <h2>Kirjanpito 2020</h2>
+  <h2>Kirjanpito 2021</h2>
   <table>
     <tr><th>Pvm</th><th>Selite</th><th>Tulo</th><th>Meno</th><th>ALV</th></tr>
     ${rowsHtml(data)}

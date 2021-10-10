@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "start": "node src/index.js --path /Users/hepora/Dropbox/Arkisto/Drillsoft/2020"
+    "start": "node src/index.js --path /Users/hepora/Dropbox/Arkisto/Drillsoft/2021"
   },
   "author": "",
   "license": "MIT",
