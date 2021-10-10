@@ -1,23 +1,15 @@
-const fs = require('fs')
-const path = require('path')
-const program = require('commander')
-const Promise = require('bluebird')
+import fs from 'fs'
+import path from 'path'
+import {Command} from 'commander/esm.mjs'
+
+const program = new Command()
 
 program
-  .version(require(`${__dirname}/../package.json`).version)
-  .option('--path <path>', 'Path to scan for PDFs')
+  .requiredOption('--path <path>', 'Path to scan for PDFs')
   .parse(process.argv)
 
-if (!program.path) {
-  console.error(program.help())
-  process.exit(1)
-}
-
-const readdirAsync = Promise.promisify(fs.readdir)
-const writeFileAsync = Promise.promisify(fs.writeFile)
-
 const fileNameRegex = /^[\d]{4}-[\d]{2}-[\d]{2}.*\.pdf$/
-readdirAsync(program.path)
+fs.promises.readdir(program.opts().path)
   .then(fileNames => fileNames.filter(fileName => fileNameRegex.test(fileName)).map(splitFilename))
   .then(splitIncomeAndExpense)
   .then(calculateTotals)
@@ -85,8 +77,8 @@ function toEuros(cents) {
 }
 
 function writeOutput(html) {
-  const outputFile = path.resolve(program.path, 'index.html')
-  return writeFileAsync(outputFile, html, 'utf8')
+  const outputFile = path.resolve(program.opts().path, 'index.html')
+  return fs.promises.writeFile(outputFile, html, 'utf8')
 }
 
 function formatDate(date) {
